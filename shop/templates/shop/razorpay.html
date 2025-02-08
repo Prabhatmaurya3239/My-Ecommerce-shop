@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pay via Razorpay</title>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+    <h1>Processing Payment via Razorpay...</h1>
+    <!-- <button id="pay-btn">Pay Now</button> -->
+
+    <script>
+    var options = {
+        "key": "{{ razorpay_key }}",
+        "amount": "{{ amount }}",
+        "currency": "INR",
+        "name": "Prabhat Maurya",
+        "order_id": "{{payment_order_id }}",
+        "handler": function (response){
+            fetch('/shop/payment/razorpay_success/', {
+                method: "POST",
+        
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}"
+                },
+                body: JSON.stringify({
+                    payment_order_id: "{{ payment_order_id }}",
+                    payment_id: response.razorpay_payment_id,
+                    status: "Success"
+                })
+                
+
+            }).then(response => response.json())
+              .then(data => {
+                console.log(data);
+                  if (data.success) {
+                      alert("Payment Successful!");
+                      window.location.href = "{% url 'checkout_success' %}";
+                  }
+              });
+        }
+    };
+    // var rzp1 = new Razorpay(options);
+    // document.getElementById("pay-btn").onclick = function(e){
+    //     rzp1.open();
+    //     e.preventDefault();
+    // }
+    var rzp1 = new Razorpay(options);
+
+    rzp1.open();
+
+</script>
+</body>
+</html>
