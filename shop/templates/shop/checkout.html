@@ -69,33 +69,11 @@
 
 {% block js%}
 <script>
-    document.getElementById('placeOrderBtn').addEventListener('click', function() {
-        // Hide the Place Order button
-        this.style.display = 'none';
-
-        // Create Paytm and Razorpay buttons
-        const paytmBtn = document.createElement('button');
-        paytmBtn.className = 'btn btn-success me-2';
-        paytmBtn.innerText = 'Pay with Paytm';
-        paytmBtn.value = 'paytm';
-        paytmBtn.type = 'submit';
-        paytmBtn.name = 'payment_method';
-
-        const razorpayBtn = document.createElement('button');
-        razorpayBtn.className = 'btn btn-danger';
-        razorpayBtn.innerText = 'Pay with Razorpay';
-        razorpayBtn.value = 'razorpay';
-        razorpayBtn.type = 'submit';
-        razorpayBtn.name = 'payment_method';
-
-        // Append buttons to the order section
-        const orderSection = document.getElementById('orderSection');
-        orderSection.appendChild(paytmBtn);
-        orderSection.appendChild(razorpayBtn);
-    });
+ 
 </script>
 <script>
         var totalPrice = 0;
+        
 
     loadcart();
     if ($.isEmptyObject(cart)){
@@ -127,6 +105,35 @@ $('#items').html("<a href = '/shop/'><h5>Your cart is Empty Please add some item
 document.location = "/shop/";
 {% endif %}
 $('#amount').val($('#totalPrice').html() )
+
+document.getElementById('placeOrderBtn').addEventListener('click', function() {
+    // Hide the Place Order button
+if (totalPrice != 0){
+    this.style.display = 'none';
+    // Create Paytm and Razorpay buttons
+    const paytmBtn = document.createElement('button');
+    paytmBtn.className = 'btn btn-success me-2';
+    paytmBtn.innerText = 'Pay with Paytm';
+    paytmBtn.value = 'paytm';
+    paytmBtn.type = 'submit';
+    paytmBtn.name = 'payment_method';
+
+    const razorpayBtn = document.createElement('button');
+    razorpayBtn.className = 'btn btn-danger';
+    razorpayBtn.innerText = 'Pay with Razorpay';
+    razorpayBtn.value = 'razorpay';
+    razorpayBtn.type = 'submit';
+    razorpayBtn.name = 'payment_method';
+
+    // Append buttons to the order section
+    const orderSection = document.getElementById('orderSection');
+    orderSection.appendChild(paytmBtn);
+    orderSection.appendChild(razorpayBtn);}
+    else{
+        alert("Your cart is empty! Please add some items to your cart before checking out!");
+        window.location.href = "/shop/";
+    }
+});
 
 </script>
 

@@ -1,5 +1,5 @@
 from django.http import HttpResponse,JsonResponse
-from django.shortcuts import render,redirect
+from django.shortcuts import render,redirect,get_object_or_404
 from .models import Product, Contact, Orders, OrderUpdate
 import json
 from math import ceil
@@ -74,24 +74,20 @@ def checkout(request):
     if request.method == "POST":
         items_json = request.POST.get('itemJson','')
         name = request.POST.get('name','')
-        amount = request.POST.get('amount','')
+        amount = int(request.POST.get('amount',''))*100
         email = request.POST.get('email','')
         phone = request.POST.get('phone','')
         address = request.POST.get('address1','') +" "+request.POST.get('address2','')
         city = request.POST.get('city','')
         state = request.POST.get('state','')
         pin_code = request.POST.get('pin_code','')
-        order = Orders( items_json = items_json, name=name,email=email,phone=phone,address=address,city=city,state=state,pin_code=pin_code, amount = amount)
-        OI = order.order_id
-        order.save()
-        context = { 'id' : order.order_id, 'thank' : True}
         payment_method = request.POST.get('payment_method', '')
         # Request paytm to transfer the amount to your account after payment  by user
         if payment_method == "paytm":
            param_dict = {
             "MID": 'DIY12386817555501617',
-            "ORDER_ID": str(order.order_id),
-            "CUST_ID": str(order.order_id), 
+            "ORDER_ID": str(email),
+            "CUST_ID": str(phone), 
             "MOBILE_NO": str(phone),  
             "EMAIL": email,  
             "CHANNEL_ID": 'WEB',
@@ -106,24 +102,21 @@ def checkout(request):
         # Request razorpay to transfer the amount to your account after payment  by user
         elif payment_method == "razorpay":
             razorpay_order = razorpay_client.order.create({
-                "amount": amount ,
+                "amount": amount  ,
                 "currency": "INR",
                 "payment_capture": "1"
-            })
-            order = Orders.objects.filter(order_id=order.order_id).first()
-            print(order)
-            order.payment_order_id = razorpay_order["id"]
-            order.save()
+                })
             return render(request, "shop/razorpay.html", {
                 "payment_order_id": razorpay_order["id"],
                 "razorpay_key": RAZORPAY_KEY_ID,
-                "amount": amount
+                "amount": amount // 100 ,"items_json" : items_json, "name": name,"email": email,"phone":phone,"address":address,"city":city,"state":state , "pin_code": pin_code
             })
     else:
         context = {'thank': False}
-    return render(request,"shop/checkout.html", context)
-def checkout_success(request):
-    return render(request, "shop/checkout_success.html")
+    return render(request,"shop/checkout.html", context) 
+def checkout_success(request, id):
+    order = get_object_or_404(Orders, order_id=id)  
+    return render(request, "shop/checkout_success.html", {'order': order})
 
 
 
@@ -139,32 +132,31 @@ def razorpay_success(request):
             # order_id = data.get("payment_order_id")
             payment_order_id = data.get("payment_order_id")
             payment_id = data.get("payment_id")
-            status = data.get("status")
-            
-
+            payment_status = data.get("status")
+            name = data.get("name")
+            email = data.get("email")
+            address = data.get("address")
+            phone = data.get("phone")
+            amount = data.get("amount")
+            items_json = data.get("items_json")
+            city = data.get("city")
+            pin_code = data.get("pin_code")
+            state = data.get("state")
             # ✅ Order का Status Update करें
-            order = Orders.objects.filter(payment_order_id=payment_order_id).first()  # Use filter().first() for safety
-
-            if order:
-                print(f"Updating Order: {order}")
-                order.payment_status = status  
-                order.payment_id = payment_id 
-                update = OrderUpdate(order_id=order.order_id, update_desc="The order has been placed")
-                update.save()
-                order.save()  # ✅ Save the updated order
-            else:
-                 print(f"Order with order_id={order} not found!")
-            return JsonResponse({"success": True})
+            order = Orders(payment_order_id = payment_order_id, name = name, payment_id = payment_id, payment_status = payment_status, email = email, phone = phone, address = address, amount = amount, items_json = items_json, city = city, pin_code = pin_code, state = state)
+            order.save()  # ✅ Save the updated order
+            # Use filter().first() for safety
+            update = OrderUpdate(order_id=order.order_id, update_desc="The order has been placed")
+            update.save()
+            return JsonResponse({"success": True, "order_id" : order.order_id}) 
             
         
         except Orders.DoesNotExist:
             return JsonResponse({"success": False, "message": "Order Not Found"})
-            print("hello2")
         except json.JSONDecodeError:
             return JsonResponse({"success": False, "message": "Invalid JSON Data"})
 
         except Exception as e:
-            print("this")
             return JsonResponse({"success": False, "message": str(e)})
 
     else:
