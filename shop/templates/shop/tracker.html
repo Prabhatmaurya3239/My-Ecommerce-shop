@@ -43,26 +43,28 @@
 {% block js%}
 <script>
     // loadcart();
-    $('#trackerForm').submit(function (event) {
-    event.preventDefault();  // Prevent form from submitting normally
-    $('#items').empty();
+    $('#trackerForm').submit(function (event) {  
+        $('#items').empty();
+        $('#citems').empty(); // Clear previous cart items
     
-    var formData = {
-        'orderId': $('input[name=orderId]').val(),
-        'email': $('input[name=email]').val(),
-        'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val()
-    };
-
-    $.ajax({
-        type: 'POST',
-        url: '/shop/tracker/',
-        data: formData,
-        encode: true,
-        success: function (data) {
-            try {
-                 data = JSON.parse(data);
-                updates = data[0];
-                if (updates.length > 0 && updates != {}) {
+        var formData = {
+            'orderId': $('input[name=orderId]').val(),
+            'email': $('input[name=email]').val(),
+            'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val()
+        };
+    
+        $.ajax({
+            type: 'POST',
+            url: '/shop/tracker/',
+            data: formData,
+            encode: true,
+        })
+        .done(function (data) {
+                console.log("hello",data)
+                data = JSON.parse(data); 
+                if (data['status'] === 'success') {
+                     updates = data['updates'];
+                     cart = data['itemsJson'];
                     for (let i = 0; i < updates.length; i++) {
                         let text = updates[i]['text'];
                         let time = updates[i]['time'];
@@ -75,32 +77,33 @@
                             </li>`;
                         $('#items').append(mystr);
                     }
-                } else {
-                    $('#items').html("<h5>Sorry! No order found with this Order Id and Email address</h5>");
-                }
-                cart = JSON.parse(data[1])
-                for(item in cart){
-        let name = cart[item][1];
-        let  qty = cart[item][0];
-        mystr =`<li class="list-group-item d-flex justify-content-between align-items-start">
-                    <div class="ms-2 me-auto">
-                        <div class="fw-bold">${name}</div>
-                    </div>
-                    <span class="badge text-bg-primary rounded-pill">${qty}</span>
-                </li>`
-            $('#citems').append(mystr);
-    }
-            } catch (error) {
-                $('#items').html("<h5>There was an error with the server response. Sorry! No order found with this Order Id and Email address</h5>");
+                    decodedJson = $("<textarea/>").html(data['itemsJson']).text();
+                    cart = JSON.parse(decodedJson);
+                    for (item in cart){
+                           let name = cart[item][1];
+                           let qty = cart[item][0];
+                           mystr = `
+                           <li class="list-group-item d-flex justify-content-between align-items-start">
+                               <div class="ms-2 me-auto">
+                                   <div class="fw-bold">${name}</div>
+                               </div>
+                               <span class="badge text-bg-primary rounded-pill">${qty}</span>
+                           </li>`;
+                       $('#citems').append(mystr);}
+                }else{
+                    mystr = `
+                      Soary!,We are not able to fetch this order id and email . Make sure to type correct order id and email.
+                    `;
+                $('#items').append(mystr);
+                $('#citems').append(mystr);
             }
-        },
-        error: function (xhr, status, error) {
-            console.error("Request failed:", error);
-            $('#items').html("<h5>There was an issue with your request. Please try again later Sorry! No order found with this Order Id and Email address.</h5>");
-        }
-    });
-});
 
+                   
+                     
+                    });
+                    event.preventDefault();
+                });
+             
 </script>
 
 

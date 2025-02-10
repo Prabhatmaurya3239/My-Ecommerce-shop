@@ -18,7 +18,7 @@
 <body>
    
 
-<nav class="navbar navbar-expand-lg bg-dark >
+<nav class="navbar navbar-expand-lg bg-dark" >
 <div class="container-fluid">
   <a class="navbar-brand text-white mx-2" href="#">My Ecommerce Cart</a>
   <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScroll"
@@ -43,8 +43,8 @@
         <a class="nav-link text-white" href="/blog">Blog</a>
       </li>
     </ul>
-    <form class="d-flex" role="search" action="/shop/search">
-      <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+    <form class="d-flex" role="search" method='get' action="/shop/search/">
+      <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="search" id = "search">
       <button class="btn btn-outline-success" type="submit">Search</button>
     </form>
     <button type="button" id="popcart" class="btn btn-secondary mx-2" 
