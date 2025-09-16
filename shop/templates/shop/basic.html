@@ -1,0 +1,203 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{% endblock %}</title>
+
+  <style>
+    {% block css %}
+    /* Add your CSS rules here */
+    {% endblock %}
+  </style>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+  integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+</head>
+<body>
+   
+
+<nav class="navbar navbar-expand-lg bg-dark" >
+<div class="container-fluid">
+  <a class="navbar-brand text-white mx-2" href="#">My Ecommerce Cart</a>
+  <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScroll"
+    aria-controls="navbarScroll" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarScroll">
+    <ul class="navbar-nav me-auto my-2 my-lg-0 navbar-nav-scroll" style="--bs-scroll-height: 100px;">
+      <li class="nav-item">
+        <a class="nav-link active text-white" aria-current="page" href="/shop/">Home</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-white" href="/shop/about">About Us</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-white" href="/shop/tracker">Tracker</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-white" href="/shop/contact">Contact Us</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-white" href="/blog">Blog</a>
+      </li>
+    </ul>
+    <form class="d-flex" role="search" method='get' action="/shop/search/">
+      <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="search" id = "search">
+      <button class="btn btn-outline-success" type="submit">Search</button>
+    </form>
+    <button type="button" id="cartButton" class="btn btn-secondary mx-2" 
+  >
+Cart(<span id="cart">0</span>)
+</button>
+  </div>
+</div>
+</nav>
+<!-- Cart Dropdown (Initially hidden) -->
+<div id="cartDropdown" class="position-fixed top-50 end-0 translate-middle-y p-3 bg-white border shadow-sm" style="display: none; width: 400px; z-index: 999;">
+  <h5>Cart Items</h5>
+  <ul id="cartItemsList" class="list-group mb-3">
+    <!-- Cart items will be dynamically inserted here -->
+  </ul>
+  <p><strong>Total: ₹<span id="totalAmount">0</span></strong></p>
+  <div class="d-flex justify-content-between">
+    <button  id="checkoutButton" class="btn btn-primary">Checkout</button>
+    <button id="clearButton" class="btn btn-danger">Clear</button>
+  </div>
+</div>
+{% block body %} {% endblock %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+
+  integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+<script>
+    function loadcart(){
+        cart = JSON.parse(localStorage.getItem('cart'));
+        var cartlen = 0;
+        try{
+      if(Object.keys(cart).length >0 ){
+        Object.values(cart).forEach(element => {
+          cartlen = cartlen + element[0];
+          
+        });}}
+        catch{
+          console.log("null");
+        }
+        document.getElementById('cart').innerHTML = cartlen;
+      }
+</script>
+<script>
+      // find out the cart item from localStorage
+    
+      loadcart();
+    
+      const cartButton = document.getElementById('cartButton');
+      const cartDropdown = document.getElementById('cartDropdown');
+      const checkoutButton = document.getElementById('checkoutButton');
+      const clearButton = document.getElementById('clearButton');
+      const cartItemsList = document.getElementById('cartItemsList');
+      const totalAmount = document.getElementById('totalAmount');
+      function updateCartUI() {
+        cartItemsList.innerHTML = ''; // Clear the cart list
+        let total = 0;
+      for(item in cart) {
+        const itemTotal = cart[item][0] * cart[item][2];
+        total += itemTotal;
+        const cartItem = document.createElement('li');
+        cartItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
+        
+        cartItem.innerHTML = `
+          <div class="d-flex align-items-center">
+            <img src="${cart[item][3]}" alt="${cart[item][1].slice(0,19)}..." class="img-fluid rounded me-2" style="width: 50px; height: 50px;">
+            <span>${cart[item][1].slice(0,19)}... (₹${cart[item][2]}) x ${cart[item][0]} = ₹${itemTotal}</span>
+          </div>
+          <button class="btn btn-danger btn-sm" onclick="removeItem('${cart[item][4]}')">Remove</button>
+        `;
+        
+        cartItemsList.appendChild(cartItem);
+      }
+
+      // Update total amount
+      totalAmount.textContent = total;
+    }
+      <!-- // If the  add to cart button  is clicked, add/increment the item -->
+     
+      function removeItem(itemId) {
+        delete cart[`${itemId}`];
+      localStorage.setItem('cart', JSON.stringify(cart));
+      updateCartUI();
+      loadcart();
+     
+      if(window.location.pathname == '/shop/'){
+        document.getElementById('div'+itemId).innerHTML = '<button id='+ itemId +' class="btn btn-primary cart">Add to Cart</button>'
+      }
+      else if(window.location.pathname == '/shop/checkout/'){
+        location.reload();
+      }
+        
+        console.log(`${itemId} has been removed.`);
+      }
+  
+      // Toggle the visibility of the cart dropdown
+      cartButton.addEventListener('click', () => {
+        cartDropdown.style.display = (cartDropdown.style.display === 'none' || cartDropdown.style.display === '') ? 'block' : 'none';
+        updateCartUI();
+      });
+  
+      // Clear the cart
+      clearButton.addEventListener('click', () => {
+        if(window.location.pathname == '/shop/'){
+          cart = JSON.parse(localStorage.getItem('cart'));
+          for(var item in cart){
+            document.getElementById('div'+item).innerHTML = '<button id='+ item +' class="btn btn-primary cart">Add to Cart</button>'
+          }
+        }
+        clearCart();
+        if(window.location.pathname == '/shop/checkout/'){
+          location.reload();
+        }
+      });
+      checkoutButton.addEventListener('click', () => {
+        alert('Proceeding to checkout...');
+        window.location.href = '/shop/checkout'
+    
+        // Add checkout logic here
+      });
+  
+    
+    function clearCart(){
+      localStorage.clear();
+      cart = {}
+      updateCart(cart);
+      loadcart();
+      updateCartUI();
+    }
+    //document.body.addEventListener('click', function(event) {
+         //   if (event.target && event.target.id === 'clearCart') {
+            
+         //   }
+        //  });
+        
+    
+    
+      
+    function updateCart(cart) {
+    try{
+    for(var item in cart){
+      document.getElementById('div'+item).innerHTML = "<button id='minus" + item+ "' class='btn btn-primary minus'>-</button> <span id='val" + item + "''>" + cart[item][0] + "</span><button id='plus" + item + "' class='btn btn-primary plus'>+</button>";
+    }
+    localStorage.setItem('cart', JSON.stringify(cart));
+      loadcart();
+    }
+    catch{
+      console.log("Ok");
+    }
+  }
+    
+    </script>
+
+  {% block js %} {% endblock %}
+  </html>

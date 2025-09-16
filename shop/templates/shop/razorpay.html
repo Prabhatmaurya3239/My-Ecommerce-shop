@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pay via Razorpay</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="text-center">Payment Details</h2>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone Number</th>
+                    <th>Amount</th>
+                    <th>Order ID</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{name}}</td>
+                    <td>{{email}}</td>
+                    <td>{{phone}}</td>
+                    <td>{{amount}}</td>
+                    <td>{{payment_order_id}}</td>
+                    <td>
+                       <a href = "shop/checkout.html/" ><button class="btn btn-warning btn-sm"> Go to Back</button> </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    {% comment %} <h1>Processing Payment via Razorpay...</h1> {% endcomment %}
+    <button id = "pay-btn" type="button" class="btn btn-primary me-2">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/b/b3/Razorpay_logo.webp" alt="Razorpay" width="20"> Pay with Razorpay
+    </button>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+    var options = {
+        "key": "{{ razorpay_key }}",
+        "amount": "{{ amount }}",
+        "currency": "INR",
+        "name": "{{name}}",
+        "order_id": "{{payment_order_id }}",
+        "contact": "{{phone}}",
+        "handler": function (response){
+            fetch('/shop/payment/razorpay_success/', {
+                method: "POST",
+        
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}"
+                },
+                body: JSON.stringify({
+                    payment_order_id: "{{ payment_order_id }}",
+                    payment_id: response.razorpay_payment_id,
+                    status: "Success",
+                    amount: "{{amount}}"  ,items_json : "{{items_json}}", name: "{{name}}",email: "{{email}}",phone : "{{phone}}",address: "{{address}}",city:"{{city}}",state:"{{state}}" , pin_code: "{{pin_code}}"
+                })
+                
+
+            }).then(response => response.json())
+              .then(data => {
+                console.log(data);
+                  if (data.success) {
+                      alert("Payment Successful!");
+                      window.location.href = `/shop/checkout_success/${data.order_id}`;
+                  }
+                  else{
+                      alert("Payment Failed!");
+                      window.location.href = "{% url 'checkout' %}";
+                  }
+              });
+        }
+    };
+    var rzp1 = new Razorpay(options);
+     document.getElementById("pay-btn").onclick = function(e){
+        rzp1.open();
+        e.preventDefault();
+        //document.querySelector('body').innerHTML = "Processing Payment via Razorpay... Please wait! Do not close this window."; 
+        
+     } 
+   
+
+</script>
+</body>
+</html>

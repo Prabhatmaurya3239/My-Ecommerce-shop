@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cart Popover Example</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Bootstrap Icons for Cart -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- Navbar with Cart Button -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">Brand</a>
+      <!-- Cart Button that triggers the popover -->
+      <button class="btn btn-outline-success" type="button" id="cartButton" data-bs-toggle="popover" data-bs-placement="bottom" data-bs-html="true" title="Cart">
+        <i class="bi bi-cart"></i> Cart
+      </button>
+    </div>
+  </nav>
+
+  <!-- Bootstrap JS and Popover JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- JavaScript for Cart functionality -->
+  <script>
+    // Sample cart data structure
+    let cart = {
+      "pr18": [1, "ASIAN Men's Wonder-1...", 1000, "http://via.placeholder.com/50", "pr16"],
+      "pr16": [2, "Item 2", 500, "http://via.placeholder.com/50", "pr18"]
+    };
+
+    // Function to update the cart UI inside the popover
+    function updateCartPopover() {
+      let cartContent = '';
+      let total = 0;
+
+      // Loop through cart items and build the content for the popover
+      for (const key in cart) {
+        if (cart.hasOwnProperty(key)) {
+          const item = cart[key];
+          const itemTotal = item[2] * item[0]; // price * quantity
+          total += itemTotal;
+
+          cartContent += `
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <div class="d-flex align-items-center">
+                <img src="${item[3]}" alt="${item[1]}" class="img-fluid rounded me-2" style="width: 50px; height: 50px;">
+                <span>${item[1]} (₹${item[2]}) x ${item[0]} = ₹${itemTotal}</span>
+              </div>
+              <button class="btn btn-danger btn-sm" onclick="removeItemByKey('${key}')">Remove</button>
+            </div>
+          `;
+        }
+      }
+
+      // Update popover content with the items and total amount
+      cartContent += `
+        <hr>
+        <p><strong>Total: ₹<span id="totalAmount">${total}</span></strong></p>
+        <div class="d-flex justify-content-between">
+          <button class="btn btn-primary btn-sm" onclick="checkout()">Checkout</button>
+          <button class="btn btn-danger btn-sm" onclick="clearCart()">Clear</button>
+        </div>
+      `;
+
+      // Set the cart content inside the popover dynamically
+      const popoverElement = document.getElementById('cartButton');
+      const popover = bootstrap.Popover.getInstance(popoverElement);
+      popover.setContent(cartContent);
+    }
+
+    // Function to remove an item by key
+    function removeItemByKey(itemKey) {
+      if (cart.hasOwnProperty(itemKey)) {
+        // Remove item from cart
+        delete cart[itemKey];
+        updateCartPopover(); // Update the popover after removal
+      }
+    }
+
+    // Clear the cart
+    function clearCart() {
+      cart = {}; // Empty the cart
+      updateCartPopover(); // Update the popover
+    }
+
+    // Checkout action
+    function checkout() {
+      alert('Proceeding to checkout...');
+      // Add your checkout logic here
+    }
+
+    // Initialize popover and set its content
+    document.addEventListener('DOMContentLoaded', function () {
+      const cartButton = document.getElementById('cartButton');
+      const popover = new bootstrap.Popover(cartButton, {
+        content: 'Loading cart...', // Placeholder content
+        html: true,
+        trigger: 'click'
+      });
+
+      // Ensure the popover is initialized when it's clicked
+      cartButton.addEventListener('click', function () {
+        updateCartPopover();
+      });
+    });
+  </script>
+
+</body>
+</html>
