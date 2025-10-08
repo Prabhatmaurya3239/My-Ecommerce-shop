@@ -8,8 +8,8 @@ import hashlib
 from paytmchecksum import PaytmChecksum
 import razorpay
 #Razorpay
-RAZORPAY_KEY_ID = "rzp_test_xmNMq9SNRQI4E6"
-RAZORPAY_SECRET = "cwMAqz3M69w6T4flpY7gVvFg"
+RAZORPAY_KEY_ID = "rzp_test_xmNMq9SNRQI4E6h"
+RAZORPAY_SECRET = "cwMAqz3M69w6T4flpY7gVvFgt"
 razorpay_client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_SECRET))
 #paytm
 MERCHANT_KEY = 'bKMfNxPPf_QdZppa'
